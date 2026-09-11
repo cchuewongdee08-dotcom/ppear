@@ -1,96 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
 <title>I love you <3</title>
 
+
 <style>
-html, body {
+
+html,
+body {
+
     margin: 0;
     padding: 0;
+
     width: 100%;
     height: 100%;
+
     background: black;
+
     overflow: hidden;
 }
 
+
 body {
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
 }
 
+
 canvas {
+
     display: block;
+
     width: 100vw;
     height: 100vh;
+
     object-fit: contain;
+
     background: black;
 }
 
+
 #start {
+
     position: fixed;
+
     inset: 0;
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
+
     background: rgba(0,0,0,0.75);
+
     color: white;
+
     font-family: Arial, sans-serif;
+
     font-size: 20px;
+
     z-index: 10;
+
     cursor: pointer;
+
     text-align: center;
 }
 
+
 #start span {
+
     padding: 15px 25px;
+
     border: 1px solid rgba(255,255,255,0.5);
+
     border-radius: 12px;
 }
+
 </style>
+
 </head>
+
 
 <body>
 
+
+<!-- =========================================
+     ปุ่มเริ่มต้น
+     ต้องกดเพื่อให้มือถืออนุญาตเปิดเพลง
+========================================= -->
+
 <div id="start">
-    <span>พี่แพรกดสิๆๆๆๆ >< </span>
+
+    <span>
+        พี่แพรกดสิๆๆๆๆ &gt;&lt;
+    </span>
+
 </div>
 
-<canvas id="canvas" width="2000" height="1200"></canvas>
 
-<audio id="music" src="love_you.mp3" loop></audio>
+<!-- =========================================
+     CANVAS
+========================================= -->
+
+<canvas
+    id="canvas"
+    width="2000"
+    height="1200">
+</canvas>
+
+
+<!-- =========================================
+     MUSIC
+     ต้องมี love_you.mp3 อยู่ไฟล์เดียวกับ index.html
+========================================= -->
+
+<audio
+    id="music"
+    src="love_you.mp3"
+    loop>
+</audio>
+
 
 <script>
 
+
+// ======================================================
+// BASIC SETTINGS
+// ======================================================
+
 const WIDTH = 2000;
+
 const HEIGHT = 1200;
 
 const FPS = 60;
+
 const SCALE = 20;
 
+
+// ======================================================
+// WORDS
+// ======================================================
+
 const WORDS = [
+
     "love you",
+
     "Love You",
+
     "LOVE YOU"
+
 ];
+
+
+// ======================================================
+// CENTER TEXT
+// ======================================================
 
 const CENTER_TEXT = " P.Pear ";
 
+
+// ======================================================
+// COLORS
+// ======================================================
+
 const COLORS = [
+
     [70, 130, 180],
+
     [30, 144, 255],
+
     [0, 191, 255],
+
     [100, 149, 237],
+
     [65, 105, 225]
+
 ];
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
 
-const music = document.getElementById("music");
-const startScreen = document.getElementById("start");
+// ======================================================
+// CANVAS
+// ======================================================
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+// ======================================================
+// MUSIC
+// ======================================================
+
+const music =
+    document.getElementById("music");
+
+
+// ======================================================
+// START SCREEN
+// ======================================================
+
+const startScreen =
+    document.getElementById("start");
 
 
 // ======================================================
@@ -98,15 +222,32 @@ const startScreen = document.getElementById("start");
 // ======================================================
 
 function randomChoice(array) {
-    return array[Math.floor(Math.random() * array.length)];
+
+    return array[
+        Math.floor(
+            Math.random() * array.length
+        )
+    ];
+
 }
+
 
 function randomFloat(min, max) {
-    return min + Math.random() * (max - min);
+
+    return min +
+        Math.random() *
+        (max - min);
+
 }
 
+
 function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+
+    return Math.floor(
+        Math.random() *
+        (max - min + 1)
+    ) + min;
+
 }
 
 
@@ -117,18 +258,36 @@ function randomInt(min, max) {
 function heartXY(t) {
 
     const x =
-        16 * Math.pow(Math.sin(t), 3);
+
+        16 *
+        Math.pow(
+            Math.sin(t),
+            3
+        );
+
 
     const y =
-        13 * Math.cos(t)
-        - 5 * Math.cos(2 * t)
-        - 2 * Math.cos(3 * t)
+
+        13 *
+        Math.cos(t)
+
+        - 5 *
+        Math.cos(2 * t)
+
+        - 2 *
+        Math.cos(3 * t)
+
         - Math.cos(4 * t);
 
+
     return {
+
         x: x,
+
         y: -y
+
     };
+
 }
 
 
@@ -139,9 +298,17 @@ function heartXY(t) {
 function toScreen(x, y) {
 
     return {
-        x: x * SCALE + WIDTH / 2,
-        y: y * SCALE + HEIGHT / 2
+
+        x:
+            x * SCALE +
+            WIDTH / 2,
+
+        y:
+            y * SCALE +
+            HEIGHT / 2
+
     };
+
 }
 
 
@@ -151,29 +318,45 @@ function toScreen(x, y) {
 
 class Particle {
 
-    constructor(x, y, order, kind) {
+    constructor(
+        x,
+        y,
+        order,
+        kind
+    ) {
 
         this.x = x;
+
         this.y = y;
 
         this.order = order;
 
         this.kind = kind;
 
-        this.word = randomChoice(WORDS);
+        this.word =
+            randomChoice(WORDS);
 
-        this.color = randomChoice(COLORS);
+        this.color =
+            randomChoice(COLORS);
 
         this.alpha = 0;
 
         this.flicker =
-            randomFloat(0, Math.PI * 2);
+            randomFloat(
+                0,
+                Math.PI * 2
+            );
 
         this.delay = 0;
 
         this.sizeMult =
-            randomFloat(0.85, 1.15);
+            randomFloat(
+                0.85,
+                1.15
+            );
+
     }
+
 }
 
 
@@ -182,70 +365,119 @@ class Particle {
 // ======================================================
 
 function buildOutlineParticles(
+
     nOutline,
+
     minGap = 30
+
 ) {
 
     const particles = [];
 
     const placed = [];
 
-    for (let i = 0; i < nOutline; i++) {
+
+    for (
+        let i = 0;
+        i < nOutline;
+        i++
+    ) {
 
         const t =
-            (i / nOutline) * Math.PI * 2;
+
+            (i / nOutline) *
+            Math.PI *
+            2;
+
 
         const heart =
             heartXY(t);
 
+
         const screen =
+
             toScreen(
                 heart.x,
                 heart.y
             );
 
+
         let tooClose = false;
 
-        for (const point of placed) {
+
+        for (
+            const point
+            of placed
+        ) {
 
             const dx =
-                screen.x - point.x;
+
+                screen.x -
+                point.x;
+
 
             const dy =
-                screen.y - point.y;
+
+                screen.y -
+                point.y;
+
 
             const distance =
+
                 Math.sqrt(
                     dx * dx +
                     dy * dy
                 );
 
-            if (distance < minGap) {
+
+            if (
+                distance < minGap
+            ) {
 
                 tooClose = true;
+
                 break;
+
             }
+
         }
 
+
         if (tooClose)
+
             continue;
 
+
         placed.push({
+
             x: screen.x,
+
             y: screen.y
+
         });
 
+
         particles.push(
+
             new Particle(
+
                 screen.x,
+
                 screen.y,
+
                 i,
+
                 "outline"
+
             )
+
         );
+
     }
 
+
     return particles;
+
 }
 
 
@@ -254,8 +486,11 @@ function buildOutlineParticles(
 // ======================================================
 
 function buildFillParticles(
+
     nFill,
+
     minGap = 46
+
 ) {
 
     const particles = [];
@@ -264,82 +499,143 @@ function buildFillParticles(
 
     let attempts = 0;
 
+
     const maxAttempts =
         nFill * 80;
 
+
     while (
+
         particles.length < nFill &&
+
         attempts < maxAttempts
+
     ) {
 
         attempts++;
 
+
         const t =
+
             randomFloat(
+
                 0,
+
                 Math.PI * 2
+
             );
 
+
         const r =
+
             randomFloat(
+
                 0.0,
+
                 0.86
+
             );
+
 
         const heart =
             heartXY(t);
 
+
         const px =
             heart.x * r;
+
 
         const py =
             heart.y * r;
 
+
         const screen =
-            toScreen(px, py);
+
+            toScreen(
+                px,
+                py
+            );
+
 
         let tooClose = false;
 
-        for (const point of placed) {
+
+        for (
+            const point
+            of placed
+        ) {
 
             const dx =
-                screen.x - point.x;
+
+                screen.x -
+                point.x;
+
 
             const dy =
-                screen.y - point.y;
+
+                screen.y -
+                point.y;
+
 
             const distance =
+
                 Math.sqrt(
                     dx * dx +
                     dy * dy
                 );
 
-            if (distance < minGap) {
+
+            if (
+                distance < minGap
+            ) {
 
                 tooClose = true;
+
                 break;
+
             }
+
         }
 
+
         if (tooClose)
+
             continue;
 
+
         placed.push({
+
             x: screen.x,
+
             y: screen.y
+
         });
 
+
         particles.push(
+
             new Particle(
+
                 screen.x,
+
                 screen.y,
-                randomInt(0, 320),
+
+                randomInt(
+                    0,
+                    320
+                ),
+
                 "fill"
+
             )
+
         );
+
     }
 
+
     return particles;
+
 }
 
 
@@ -348,107 +644,186 @@ function buildFillParticles(
 // ======================================================
 
 function drawGlowText(
+
     particle,
+
     alpha
+
 ) {
 
     if (alpha <= 0)
+
         return;
 
+
     const color =
+
         `rgb(
             ${particle.color[0]},
             ${particle.color[1]},
             ${particle.color[2]}
         )`;
 
+
     let fontSize;
 
-    if (particle.kind === "outline") {
+
+    if (
+        particle.kind ===
+        "outline"
+    ) {
+
         fontSize = 20;
+
     } else {
+
         fontSize = 17;
+
     }
 
-    fontSize *= particle.sizeMult;
+
+    fontSize *=
+        particle.sizeMult;
 
 
+    // ==================================================
     // GLOW ใหญ่
+    // ==================================================
+
     if (alpha > 10) {
 
         ctx.save();
 
+
         ctx.font =
             `bold ${fontSize}px Arial`;
 
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.textBaseline =
+            "middle";
+
 
         ctx.globalAlpha =
             (alpha / 255) / 7;
 
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = color;
 
-        ctx.fillStyle = color;
+        ctx.shadowBlur = 20;
+
+        ctx.shadowColor =
+            color;
+
+
+        ctx.fillStyle =
+            color;
+
 
         ctx.fillText(
+
             particle.word,
+
             particle.x,
+
             particle.y
+
         );
+
 
         ctx.restore();
 
 
+        // ==============================================
         // GLOW เล็ก
+        // ==============================================
+
         ctx.save();
+
 
         ctx.font =
             `bold ${fontSize}px Arial`;
 
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.textBaseline =
+            "middle";
+
 
         ctx.globalAlpha =
             (alpha / 255) / 3;
 
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = color;
 
-        ctx.fillStyle = color;
+        ctx.shadowBlur = 10;
+
+        ctx.shadowColor =
+            color;
+
+
+        ctx.fillStyle =
+            color;
+
 
         ctx.fillText(
+
             particle.word,
+
             particle.x,
+
             particle.y
+
         );
 
+
         ctx.restore();
+
     }
 
 
+    // ==================================================
     // TEXT หลัก
+    // ==================================================
+
     ctx.save();
+
 
     ctx.font =
         `bold ${fontSize}px Arial`;
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.textBaseline =
+        "middle";
+
 
     ctx.globalAlpha =
         alpha / 255;
 
-    ctx.fillStyle = color;
+
+    ctx.fillStyle =
+        color;
+
 
     ctx.fillText(
+
         particle.word,
+
         particle.x,
+
         particle.y
+
     );
 
+
     ctx.restore();
+
 }
 
 
@@ -457,95 +832,162 @@ function drawGlowText(
 // ======================================================
 
 function drawCenterText(
+
     frame,
+
     centerStartFrame
+
 ) {
 
-    if (frame <= centerStartFrame)
+    if (
+        frame <=
+        centerStartFrame
+    )
+
         return;
 
+
     const progress =
+
         Math.min(
+
             1.0,
-            (frame - centerStartFrame) / 60
+
+            (
+                frame -
+                centerStartFrame
+            ) / 60
+
         );
 
+
     const centerAlpha =
+
         255 *
+
         (
+
             1 -
+
             Math.exp(
                 -progress * 8
             )
+
         );
 
 
-    // Pulse
+    // ==================================================
+    // PULSE
+    // ==================================================
+
     const pulse =
+
         1.0 +
+
         0.025 *
+
         Math.sin(
             frame * 0.05
         );
 
+
     const fontSize =
+
         54 * pulse;
 
 
+    // ==================================================
     // GLOW
+    // ==================================================
+
     if (centerAlpha > 10) {
 
         ctx.save();
 
+
         ctx.font =
             `bold ${fontSize}px Georgia`;
 
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.textBaseline =
+            "middle";
+
 
         ctx.globalAlpha =
             (centerAlpha / 255) / 5;
 
+
         ctx.shadowBlur = 25;
+
 
         ctx.shadowColor =
             "rgb(255,250,245)";
 
+
         ctx.fillStyle =
             "rgb(255,250,245)";
 
+
         ctx.fillText(
+
             CENTER_TEXT,
+
             WIDTH / 2,
+
             HEIGHT / 2
+
         );
 
+
         ctx.restore();
+
     }
 
 
+    // ==================================================
     // P.Pear
+    // ==================================================
+
     ctx.save();
+
 
     ctx.font =
         `bold ${fontSize}px Georgia`;
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.textBaseline =
+        "middle";
+
 
     ctx.globalAlpha =
         centerAlpha / 255;
 
+
     ctx.fillStyle =
         "rgb(255,250,245)";
 
+
     ctx.fillText(
+
         CENTER_TEXT,
+
         WIDTH / 2,
+
         HEIGHT / 2
+
     );
 
+
     ctx.restore();
+
 }
 
 
@@ -554,9 +996,12 @@ function drawCenterText(
 // ======================================================
 
 const outline =
+
     buildOutlineParticles(160);
 
+
 const fill =
+
     buildFillParticles(130);
 
 
@@ -565,44 +1010,77 @@ const fill =
 // ======================================================
 
 const outlineSpan =
+
     outline.length > 0
+
         ? Math.max(
+
             ...outline.map(
+
                 p => p.order
+
             )
+
         )
+
         : 0;
+
 
 const framesPerStep = 1.6;
 
+
 const fillStartFrame =
+
     Math.floor(
+
         outlineSpan *
         framesPerStep
+
     ) + 30;
 
 
-// Outline delay
-for (const p of outline) {
+// ======================================================
+// OUTLINE DELAY
+// ======================================================
+
+for (
+    const p of outline
+) {
 
     p.delay =
+
         Math.floor(
+
             p.order *
             framesPerStep
+
         );
+
 }
 
 
-// Fill delay
-for (const p of fill) {
+// ======================================================
+// FILL DELAY
+// ======================================================
+
+for (
+    const p of fill
+) {
 
     p.delay =
+
         fillStartFrame +
         p.order;
+
 }
 
 
+// ======================================================
+// ALL PARTICLES
+// ======================================================
+
 const particles =
+
     outline.concat(fill);
 
 
@@ -618,75 +1096,147 @@ let running = true;
 function animate() {
 
     if (!running)
+
         return;
+
 
     frame++;
 
 
+    // ==================================================
     // BLACK BACKGROUND
+    // ==================================================
+
     ctx.clearRect(
+
         0,
+
         0,
+
         WIDTH,
+
         HEIGHT
+
     );
 
-    ctx.fillStyle = "black";
+
+    ctx.fillStyle =
+        "black";
+
 
     ctx.fillRect(
+
         0,
+
         0,
+
         WIDTH,
+
         HEIGHT
+
     );
 
 
+    // ==================================================
     // PARTICLES
-    for (const p of particles) {
+    // ==================================================
+
+    for (
+        const p of particles
+    ) {
+
 
         if (
+
             frame > p.delay &&
+
             p.alpha < 255
+
         ) {
 
+
+            // ⭐⭐⭐ แก้ตรงนี้ ⭐⭐⭐
+            // ทำให้ love you ค่อย ๆ ปรากฏช้าลง
+            //
+            // เดิม:
+            // p.alpha + 14 + randomInt(0, 4)
+            //
+            // ใหม่:
+            // p.alpha + 4 + randomInt(0, 2)
+            //
+            // ยิ่งเลขน้อย = ยิ่งค่อย ๆ ขึ้น
+
             p.alpha =
+
                 Math.min(
+
                     255,
+
                     p.alpha +
-                    14 +
-                    randomInt(0, 4)
+
+                    4 +
+
+                    randomInt(
+                        0,
+                        2
+                    )
+
                 );
+
         }
 
 
+        // ==================================================
+        // FLICKER
+        // ==================================================
+
         let flick = 1.0;
 
-        if (p.alpha >= 255) {
+
+        if (
+            p.alpha >= 255
+        ) {
 
             flick =
+
                 0.75 +
+
                 0.25 *
+
                 Math.sin(
+
                     frame * 0.04 +
+
                     p.flicker
+
                 );
+
         }
 
 
         const alpha =
+
             Math.floor(
-                p.alpha * flick
+
+                p.alpha *
+                flick
+
             );
 
 
         if (alpha <= 0)
+
             continue;
 
 
         drawGlowText(
+
             p,
+
             alpha
+
         );
+
     }
 
 
@@ -695,17 +1245,29 @@ function animate() {
     // ==================================================
 
     const centerStartFrame =
-        16 * FPS;
+
+        15 * FPS;
+
 
     drawCenterText(
+
         frame,
+
         centerStartFrame
+
     );
 
+
+    // ==================================================
+    // LOOP
+    // ==================================================
 
     requestAnimationFrame(
+
         animate
+
     );
+
 }
 
 
@@ -714,27 +1276,48 @@ function animate() {
 // ======================================================
 
 startScreen.addEventListener(
+
     "click",
+
     function () {
 
+
+        // เปิดเพลง
         music.play()
+
             .catch(
+
                 error => {
+
                     console.log(
+
                         "Audio blocked:",
+
                         error
+
                     );
+
                 }
+
             );
 
+
+        // ซ่อนปุ่ม
         startScreen.style.display =
             "none";
 
+
+        // เริ่ม Animation
         animate();
+
     },
+
     {
+
         once: true
+
     }
+
 );
 
 
@@ -743,19 +1326,31 @@ startScreen.addEventListener(
 // ======================================================
 
 document.addEventListener(
+
     "keydown",
+
     function (event) {
 
-        if (event.key === "Escape") {
+
+        if (
+            event.key === "Escape"
+        ) {
 
             running = false;
 
+
             music.pause();
+
         }
+
     }
+
 );
+
 
 </script>
 
+
 </body>
+
 </html>
