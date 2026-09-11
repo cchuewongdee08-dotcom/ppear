@@ -6,56 +6,56 @@
 <title>I love you <3</title>
 
 <style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background: black;
-        overflow: hidden;
-    }
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+}
 
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    canvas {
-        display: block;
-        width: 100vw;
-        height: 100vh;
-        object-fit: contain;
-        background: black;
-    }
+canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+    background: black;
+}
 
-    #start {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.75);
-        color: white;
-        font-family: Arial, sans-serif;
-        font-size: 20px;
-        z-index: 10;
-        cursor: pointer;
-        text-align: center;
-    }
+#start {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 10;
+    cursor: pointer;
+    text-align: center;
+}
 
-    #start span {
-        padding: 15px 25px;
-        border: 1px solid rgba(255,255,255,0.5);
-        border-radius: 12px;
-    }
+#start span {
+    padding: 15px 25px;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 12px;
+}
 </style>
 </head>
 
 <body>
 
 <div id="start">
-    <span> พี่แพรกดสิๆๆๆ >< </span>
+    <span>❤️ Tap to start ❤️</span>
 </div>
 
 <canvas id="canvas" width="2000" height="1200"></canvas>
@@ -70,17 +70,14 @@ const HEIGHT = 1200;
 const FPS = 60;
 const SCALE = 20;
 
-// เหมือน Python
 const WORDS = [
     "love you",
     "Love You",
     "LOVE YOU"
 ];
 
-// ข้อความตรงกลาง
 const CENTER_TEXT = " P.Pear ";
 
-// สีเหมือน Python
 const COLORS = [
     [70, 130, 180],
     [30, 144, 255],
@@ -115,7 +112,6 @@ function randomInt(min, max) {
 
 // ======================================================
 // HEART EQUATION
-// เหมือน heart_xy() ใน Python
 // ======================================================
 
 function heartXY(t) {
@@ -183,10 +179,12 @@ class Particle {
 
 // ======================================================
 // OUTLINE PARTICLES
-// เหมือน build_outline_particles()
 // ======================================================
 
-function buildOutlineParticles(nOutline, minGap = 30) {
+function buildOutlineParticles(
+    nOutline,
+    minGap = 30
+) {
 
     const particles = [];
 
@@ -201,7 +199,10 @@ function buildOutlineParticles(nOutline, minGap = 30) {
             heartXY(t);
 
         const screen =
-            toScreen(heart.x, heart.y);
+            toScreen(
+                heart.x,
+                heart.y
+            );
 
         let tooClose = false;
 
@@ -214,12 +215,14 @@ function buildOutlineParticles(nOutline, minGap = 30) {
                 screen.y - point.y;
 
             const distance =
-                Math.sqrt(dx * dx + dy * dy);
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
 
             if (distance < minGap) {
 
                 tooClose = true;
-
                 break;
             }
         }
@@ -248,10 +251,12 @@ function buildOutlineParticles(nOutline, minGap = 30) {
 
 // ======================================================
 // FILL PARTICLES
-// เหมือน build_fill_particles()
 // ======================================================
 
-function buildFillParticles(nFill, minGap = 46) {
+function buildFillParticles(
+    nFill,
+    minGap = 46
+) {
 
     const particles = [];
 
@@ -270,10 +275,16 @@ function buildFillParticles(nFill, minGap = 46) {
         attempts++;
 
         const t =
-            randomFloat(0, Math.PI * 2);
+            randomFloat(
+                0,
+                Math.PI * 2
+            );
 
         const r =
-            randomFloat(0.0, 0.86);
+            randomFloat(
+                0.0,
+                0.86
+            );
 
         const heart =
             heartXY(t);
@@ -298,12 +309,14 @@ function buildFillParticles(nFill, minGap = 46) {
                 screen.y - point.y;
 
             const distance =
-                Math.sqrt(dx * dx + dy * dy);
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
 
             if (distance < minGap) {
 
                 tooClose = true;
-
                 break;
             }
         }
@@ -331,7 +344,7 @@ function buildFillParticles(nFill, minGap = 46) {
 
 
 // ======================================================
-// DRAW PARTICLE TEXT + GLOW
+// DRAW TEXT + GLOW
 // ======================================================
 
 function drawGlowText(
@@ -343,26 +356,24 @@ function drawGlowText(
         return;
 
     const color =
-        `rgb(${particle.color[0]}, ${particle.color[1]}, ${particle.color[2]})`;
+        `rgb(
+            ${particle.color[0]},
+            ${particle.color[1]},
+            ${particle.color[2]}
+        )`;
 
     let fontSize;
 
     if (particle.kind === "outline") {
-
         fontSize = 20;
-
     } else {
-
         fontSize = 17;
     }
 
     fontSize *= particle.sizeMult;
 
 
-    // ------------------------------------------
-    // GLOW
-    // ------------------------------------------
-
+    // GLOW ใหญ่
     if (alpha > 10) {
 
         ctx.save();
@@ -373,12 +384,10 @@ function drawGlowText(
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        // glow ใหญ่
         ctx.globalAlpha =
             (alpha / 255) / 7;
 
         ctx.shadowBlur = 20;
-
         ctx.shadowColor = color;
 
         ctx.fillStyle = color;
@@ -392,7 +401,7 @@ function drawGlowText(
         ctx.restore();
 
 
-        // glow เล็ก
+        // GLOW เล็ก
         ctx.save();
 
         ctx.font =
@@ -405,7 +414,6 @@ function drawGlowText(
             (alpha / 255) / 3;
 
         ctx.shadowBlur = 10;
-
         ctx.shadowColor = color;
 
         ctx.fillStyle = color;
@@ -420,10 +428,7 @@ function drawGlowText(
     }
 
 
-    // ------------------------------------------
     // TEXT หลัก
-    // ------------------------------------------
-
     ctx.save();
 
     ctx.font =
@@ -448,10 +453,13 @@ function drawGlowText(
 
 
 // ======================================================
-// CENTER TEXT
+// CENTER TEXT - P.PEAR
 // ======================================================
 
-function drawCenterText(frame, centerStartFrame) {
+function drawCenterText(
+    frame,
+    centerStartFrame
+) {
 
     if (frame <= centerStartFrame)
         return;
@@ -466,25 +474,25 @@ function drawCenterText(frame, centerStartFrame) {
         255 *
         (
             1 -
-            Math.exp(-progress * 8)
+            Math.exp(
+                -progress * 8
+            )
         );
 
 
-    // pulse เหมือน Python
+    // Pulse
     const pulse =
         1.0 +
         0.025 *
-        Math.sin(frame * 0.05);
-
+        Math.sin(
+            frame * 0.05
+        );
 
     const fontSize =
         54 * pulse;
 
 
-    // ------------------------------------------
-    // CENTER GLOW
-    // ------------------------------------------
-
+    // GLOW
     if (centerAlpha > 10) {
 
         ctx.save();
@@ -516,10 +524,7 @@ function drawCenterText(frame, centerStartFrame) {
     }
 
 
-    // ------------------------------------------
-    // CENTER TEXT
-    // ------------------------------------------
-
+    // P.Pear
     ctx.save();
 
     ctx.font =
@@ -557,13 +562,14 @@ const fill =
 
 // ======================================================
 // DELAY
-// เหมือน Python
 // ======================================================
 
 const outlineSpan =
     outline.length > 0
         ? Math.max(
-            ...outline.map(p => p.order)
+            ...outline.map(
+                p => p.order
+            )
         )
         : 0;
 
@@ -571,21 +577,23 @@ const framesPerStep = 1.6;
 
 const fillStartFrame =
     Math.floor(
-        outlineSpan * framesPerStep
+        outlineSpan *
+        framesPerStep
     ) + 30;
 
 
-// outline delay
+// Outline delay
 for (const p of outline) {
 
     p.delay =
         Math.floor(
-            p.order * framesPerStep
+            p.order *
+            framesPerStep
         );
 }
 
 
-// fill delay
+// Fill delay
 for (const p of fill) {
 
     p.delay =
@@ -599,7 +607,7 @@ const particles =
 
 
 // ======================================================
-// START
+// ANIMATION
 // ======================================================
 
 let frame = 0;
@@ -607,23 +615,15 @@ let frame = 0;
 let running = true;
 
 
-// ======================================================
-// MAIN LOOP
-// ======================================================
-
 function animate() {
 
     if (!running)
         return;
 
-
     frame++;
 
 
-    // ------------------------------------------
     // BLACK BACKGROUND
-    // ------------------------------------------
-
     ctx.clearRect(
         0,
         0,
@@ -641,10 +641,7 @@ function animate() {
     );
 
 
-    // ------------------------------------------
     // PARTICLES
-    // ------------------------------------------
-
     for (const p of particles) {
 
         if (
@@ -663,7 +660,6 @@ function animate() {
 
 
         let flick = 1.0;
-
 
         if (p.alpha >= 255) {
 
@@ -694,12 +690,12 @@ function animate() {
     }
 
 
-    // ------------------------------------------
-    // CENTER
-    // ------------------------------------------
+    // ==================================================
+    // P.PEAR ตอน 16 วินาที
+    // ==================================================
 
     const centerStartFrame =
-        fillStartFrame + 200;
+        16 * FPS;
 
     drawCenterText(
         frame,
@@ -707,16 +703,14 @@ function animate() {
     );
 
 
-    // ------------------------------------------
-    // LOOP
-    // ------------------------------------------
-
-    requestAnimationFrame(animate);
+    requestAnimationFrame(
+        animate
+    );
 }
 
 
 // ======================================================
-// MOBILE AUDIO
+// START + MUSIC
 // ======================================================
 
 startScreen.addEventListener(
@@ -724,12 +718,14 @@ startScreen.addEventListener(
     function () {
 
         music.play()
-            .catch(error => {
-                console.log(
-                    "Audio blocked:",
-                    error
-                );
-            });
+            .catch(
+                error => {
+                    console.log(
+                        "Audio blocked:",
+                        error
+                    );
+                }
+            );
 
         startScreen.style.display =
             "none";
@@ -743,7 +739,7 @@ startScreen.addEventListener(
 
 
 // ======================================================
-// DESKTOP
+// ESC
 // ======================================================
 
 document.addEventListener(
