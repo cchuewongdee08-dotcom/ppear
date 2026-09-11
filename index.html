@@ -1,213 +1,765 @@
-import math
-import random
-import pygame
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I love you <3</title>
 
-WIDTH, HEIGHT = 2000, 1200
-BACKGROUND_COLOR = (0, 0, 0)
-FPS = 60
-SCALE = 20
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        overflow: hidden;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        object-fit: contain;
+        background: black;
+    }
+
+    #start {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.75);
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 20px;
+        z-index: 10;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    #start span {
+        padding: 15px 25px;
+        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: 12px;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="start">
+    <span>❤️ Tap to start ❤️</span>
+</div>
+
+<canvas id="canvas" width="2000" height="1200"></canvas>
+
+<audio id="music" src="love_you.mp3" loop></audio>
+
+<script>
+
+const WIDTH = 2000;
+const HEIGHT = 1200;
+
+const FPS = 60;
+const SCALE = 20;
+
+// เหมือน Python
+const WORDS = [
+    "love you",
+    "Love You",
+    "LOVE YOU"
+];
+
+// ข้อความตรงกลาง
+const CENTER_TEXT = " P.Pear ";
+
+// สีเหมือน Python
+const COLORS = [
+    [70, 130, 180],
+    [30, 144, 255],
+    [0, 191, 255],
+    [100, 149, 237],
+    [65, 105, 225]
+];
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const music = document.getElementById("music");
+const startScreen = document.getElementById("start");
 
 
-WORDS = ["love you", "Love You", "LOVE YOU"]
-CENTER_TEXT = " P.Pear "
-COLORS = [
-    (70, 130, 180),
-    (30, 144, 255),  
-    (0, 191, 255),  
-    (100, 149, 237), 
-    (65, 105, 225)
-    ]
+// ======================================================
+// RANDOM
+// ======================================================
+
+function randomChoice(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
+function randomFloat(min, max) {
+    return min + Math.random() * (max - min);
+}
+
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 
-class Particle:
-    __slots__ = ('x', 'y', 'order', 'kind', 'word', 'color', 'alpha', 'flicker', 'font', 'delay', 'size_mult')
-    
-    def __init__(self, x, y, order, kind):
-        self.x = x
-        self.y = y
-        self.order = order
-        self.kind = kind
-        self.word = random.choice(WORDS)
-        self.color = random.choice(COLORS)
-        self.alpha = 0
-        self.flicker = random.uniform(0, math.pi * 2)
-        self.font = None
-        self.delay = 0
-        self.size_mult = random.uniform(0.85, 1.15)
+// ======================================================
+// HEART EQUATION
+// เหมือน heart_xy() ใน Python
+// ======================================================
 
-def heart_xy(t):
-    x = 16 * (math.sin(t) ** 3)
-    y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
-    return x, -y
+function heartXY(t) {
 
-def to_screen(x, y):
-    return x * SCALE + WIDTH / 2, y * SCALE + HEIGHT / 2 
+    const x =
+        16 * Math.pow(Math.sin(t), 3);
 
-def build_outline_particles(n_outline, min_gap=30):
-    particles = []
-    placed = []
-    for i in range(n_outline):
-        t = (i / n_outline) * 2 * math.pi
-        bx, by = heart_xy(t)
-        sx, sy = to_screen(bx, by)
-        if any(math.hypot(sx - px, sy - py) < min_gap for (px, py) in placed):
-            continue
-        placed.append((sx, sy))
-        particles.append(Particle(sx, sy, i, "outline"))
-    return particles
+    const y =
+        13 * Math.cos(t)
+        - 5 * Math.cos(2 * t)
+        - 2 * Math.cos(3 * t)
+        - Math.cos(4 * t);
 
-def build_fill_particles(n_fill, min_gap=46):
-    particles = []
-    placed = []
-    attempts = 0
-    max_attempts = n_fill * 80
-    
-    while len(particles) < n_fill and attempts < max_attempts:
-        attempts += 1
-        t = random.uniform(0, 2 * math.pi)
-        r = random.uniform(0.0, 0.86)
-        bx, by = heart_xy(t)
-        px, py = bx * r, by * r
-        sx, sy = to_screen(px, py)
-        
-        if any(math.hypot(sx - qx, sy - qy) < min_gap for (qx, qy) in placed):
-            continue
-            
-        placed.append((sx, sy))
-        particles.append(Particle(sx, sy, random.randint(0, 320), "fill"))
-    
-    return particles
+    return {
+        x: x,
+        y: -y
+    };
+}
 
-def draw_glow_text(glow_layer, screen_layer, font, word, color, x, y, alpha, size_mult=1.0):
-    if alpha <= 0:
-        return
-    
-    base_size = font.size(word)
-    if size_mult != 1.0:
-        scaled_font = pygame.font.Font(None, int(font.get_height() * size_mult))
-        txt = scaled_font.render(word, True, color)
-    else:
-        txt = font.render(word, True, color)
-    
-    txt.set_alpha(alpha)
-    txt_rect = txt.get_rect(center=(x, y))
-    
-    if alpha > 10:
-        glow_big = pygame.transform.smoothscale(txt, (int(txt.get_width() * 2.4), int(txt.get_height() * 2.4)))
-        glow_big.set_alpha(max(0, alpha // 7))
-        glow_rect = glow_big.get_rect(center=(x, y))
-        glow_layer.blit(glow_big, glow_rect)
-        
-        glow_small = pygame.transform.smoothscale(txt, (int(txt.get_width() * 1.6), int(txt.get_height() * 1.6)))
-        glow_small.set_alpha(max(0, alpha // 3))
-        glow_rect = glow_small.get_rect(center=(x, y))
-        glow_layer.blit(glow_small, glow_rect)
-    
-    screen_layer.blit(txt, txt_rect)
 
-def main():
-    pygame.init()
+// ======================================================
+// TO SCREEN
+// ======================================================
 
-    pygame.mixer.init()
-    pygame.mixer.music.load("love_you.mp3")
-    pygame.mixer.music.play()
+function toScreen(x, y) {
 
-    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF)
-    pygame.display.set_caption("I love you <3")
-    clock = pygame.time.Clock()
-    
-    font_outline = pygame.font.SysFont("arial", 20, bold=True)
-    font_fill = pygame.font.SysFont("arial", 17, bold=True)
-    font_center = pygame.font.SysFont("georgia", 54, bold=True)
-    
-    background = pygame.Surface((WIDTH, HEIGHT))
-    background.fill(BACKGROUND_COLOR)
-    
-    outline = build_outline_particles(n_outline=160)
-    fill = build_fill_particles(n_fill=130)
-    
-    outline_span = max(p.order for p in outline) if outline else 0
-    frames_per_step = 1.6
-    fill_start_frame = int(outline_span * frames_per_step) + 30
-    
-    for p in fill:
-        p.delay = fill_start_frame + p.order
-    for p in outline:
-        p.delay = int(p.order * frames_per_step)
-    
-    particles = outline + fill
-    for p in particles:
-        p.font = font_outline if p.kind == "outline" else font_fill
-    
-    running = True
-    frame = 0
-    glow_layer = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    text_layer = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                running = False
-        
-        screen.blit(background, (0, 0))
-        glow_layer.fill((0, 0, 0, 0))
-        text_layer.fill((0, 0, 0, 0))
-        frame += 1
-        
-        for p in particles:
-            if frame > p.delay and p.alpha < 255:
-                p.alpha = min(255, p.alpha + 14 + random.randint(0, 4))
-            
-            if p.alpha >= 255:
-                flick = 0.75 + 0.25 * math.sin(frame * 0.04 + p.flicker)
-            else:
-                flick = 1.0
-            
-            alpha = int(p.alpha * flick)
-            if alpha <= 0:
-                continue
-            
-            draw_glow_text(glow_layer, text_layer, p.font, p.word, p.color, 
-                          p.x, p.y, alpha, p.size_mult)
-        
-        screen.blit(glow_layer, (0, 0))
-        screen.blit(text_layer, (0, 0))
-        
-        center_start = fill_start_frame + 200
-        if frame > center_start:
-            progress = min(1.0, (frame - center_start) / 60)
-            center_alpha = int(255 * (1 - math.exp(-progress * 8)))
-            
-            pulse = 1.0 + 0.025 * math.sin(frame * 0.05)
-            center_surf = font_center.render(CENTER_TEXT, True, (255, 250, 245))
-            
-            new_width = int(center_surf.get_width() * pulse)
-            new_height = int(center_surf.get_height() * pulse)
-            if new_width > 0 and new_height > 0:
-                center_surf = pygame.transform.smoothscale(center_surf, (new_width, new_height))
-            
-            center_surf.set_alpha(center_alpha)
-            
-            if center_alpha > 10:
-                glow_center = pygame.transform.smoothscale(
-                    center_surf, (int(center_surf.get_width() * 1.4), int(center_surf.get_height() * 1.4))
-                )
-                glow_center.set_alpha(center_alpha // 5)
-                glow_rect = glow_center.get_rect(center=(WIDTH/2, HEIGHT/2))
-                screen.blit(glow_center, glow_rect)
-            
-            text_rect = center_surf.get_rect(center=(WIDTH/2, HEIGHT/2))
-            screen.blit(center_surf, text_rect)
-        
-        pygame.display.flip()
-        clock.tick(FPS)
-    
-    pygame.quit()
+    return {
+        x: x * SCALE + WIDTH / 2,
+        y: y * SCALE + HEIGHT / 2
+    };
+}
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print("OCURRIO UN ERROR:", e)
-        import traceback
-        traceback.print_exc()
+
+// ======================================================
+// PARTICLE
+// ======================================================
+
+class Particle {
+
+    constructor(x, y, order, kind) {
+
+        this.x = x;
+        this.y = y;
+
+        this.order = order;
+
+        this.kind = kind;
+
+        this.word = randomChoice(WORDS);
+
+        this.color = randomChoice(COLORS);
+
+        this.alpha = 0;
+
+        this.flicker =
+            randomFloat(0, Math.PI * 2);
+
+        this.delay = 0;
+
+        this.sizeMult =
+            randomFloat(0.85, 1.15);
+    }
+}
+
+
+// ======================================================
+// OUTLINE PARTICLES
+// เหมือน build_outline_particles()
+// ======================================================
+
+function buildOutlineParticles(nOutline, minGap = 30) {
+
+    const particles = [];
+
+    const placed = [];
+
+    for (let i = 0; i < nOutline; i++) {
+
+        const t =
+            (i / nOutline) * Math.PI * 2;
+
+        const heart =
+            heartXY(t);
+
+        const screen =
+            toScreen(heart.x, heart.y);
+
+        let tooClose = false;
+
+        for (const point of placed) {
+
+            const dx =
+                screen.x - point.x;
+
+            const dy =
+                screen.y - point.y;
+
+            const distance =
+                Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < minGap) {
+
+                tooClose = true;
+
+                break;
+            }
+        }
+
+        if (tooClose)
+            continue;
+
+        placed.push({
+            x: screen.x,
+            y: screen.y
+        });
+
+        particles.push(
+            new Particle(
+                screen.x,
+                screen.y,
+                i,
+                "outline"
+            )
+        );
+    }
+
+    return particles;
+}
+
+
+// ======================================================
+// FILL PARTICLES
+// เหมือน build_fill_particles()
+// ======================================================
+
+function buildFillParticles(nFill, minGap = 46) {
+
+    const particles = [];
+
+    const placed = [];
+
+    let attempts = 0;
+
+    const maxAttempts =
+        nFill * 80;
+
+    while (
+        particles.length < nFill &&
+        attempts < maxAttempts
+    ) {
+
+        attempts++;
+
+        const t =
+            randomFloat(0, Math.PI * 2);
+
+        const r =
+            randomFloat(0.0, 0.86);
+
+        const heart =
+            heartXY(t);
+
+        const px =
+            heart.x * r;
+
+        const py =
+            heart.y * r;
+
+        const screen =
+            toScreen(px, py);
+
+        let tooClose = false;
+
+        for (const point of placed) {
+
+            const dx =
+                screen.x - point.x;
+
+            const dy =
+                screen.y - point.y;
+
+            const distance =
+                Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < minGap) {
+
+                tooClose = true;
+
+                break;
+            }
+        }
+
+        if (tooClose)
+            continue;
+
+        placed.push({
+            x: screen.x,
+            y: screen.y
+        });
+
+        particles.push(
+            new Particle(
+                screen.x,
+                screen.y,
+                randomInt(0, 320),
+                "fill"
+            )
+        );
+    }
+
+    return particles;
+}
+
+
+// ======================================================
+// DRAW PARTICLE TEXT + GLOW
+// ======================================================
+
+function drawGlowText(
+    particle,
+    alpha
+) {
+
+    if (alpha <= 0)
+        return;
+
+    const color =
+        `rgb(${particle.color[0]}, ${particle.color[1]}, ${particle.color[2]})`;
+
+    let fontSize;
+
+    if (particle.kind === "outline") {
+
+        fontSize = 20;
+
+    } else {
+
+        fontSize = 17;
+    }
+
+    fontSize *= particle.sizeMult;
+
+
+    // ------------------------------------------
+    // GLOW
+    // ------------------------------------------
+
+    if (alpha > 10) {
+
+        ctx.save();
+
+        ctx.font =
+            `bold ${fontSize}px Arial`;
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // glow ใหญ่
+        ctx.globalAlpha =
+            (alpha / 255) / 7;
+
+        ctx.shadowBlur = 20;
+
+        ctx.shadowColor = color;
+
+        ctx.fillStyle = color;
+
+        ctx.fillText(
+            particle.word,
+            particle.x,
+            particle.y
+        );
+
+        ctx.restore();
+
+
+        // glow เล็ก
+        ctx.save();
+
+        ctx.font =
+            `bold ${fontSize}px Arial`;
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.globalAlpha =
+            (alpha / 255) / 3;
+
+        ctx.shadowBlur = 10;
+
+        ctx.shadowColor = color;
+
+        ctx.fillStyle = color;
+
+        ctx.fillText(
+            particle.word,
+            particle.x,
+            particle.y
+        );
+
+        ctx.restore();
+    }
+
+
+    // ------------------------------------------
+    // TEXT หลัก
+    // ------------------------------------------
+
+    ctx.save();
+
+    ctx.font =
+        `bold ${fontSize}px Arial`;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.globalAlpha =
+        alpha / 255;
+
+    ctx.fillStyle = color;
+
+    ctx.fillText(
+        particle.word,
+        particle.x,
+        particle.y
+    );
+
+    ctx.restore();
+}
+
+
+// ======================================================
+// CENTER TEXT
+// ======================================================
+
+function drawCenterText(frame, centerStartFrame) {
+
+    if (frame <= centerStartFrame)
+        return;
+
+    const progress =
+        Math.min(
+            1.0,
+            (frame - centerStartFrame) / 60
+        );
+
+    const centerAlpha =
+        255 *
+        (
+            1 -
+            Math.exp(-progress * 8)
+        );
+
+
+    // pulse เหมือน Python
+    const pulse =
+        1.0 +
+        0.025 *
+        Math.sin(frame * 0.05);
+
+
+    const fontSize =
+        54 * pulse;
+
+
+    // ------------------------------------------
+    // CENTER GLOW
+    // ------------------------------------------
+
+    if (centerAlpha > 10) {
+
+        ctx.save();
+
+        ctx.font =
+            `bold ${fontSize}px Georgia`;
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.globalAlpha =
+            (centerAlpha / 255) / 5;
+
+        ctx.shadowBlur = 25;
+
+        ctx.shadowColor =
+            "rgb(255,250,245)";
+
+        ctx.fillStyle =
+            "rgb(255,250,245)";
+
+        ctx.fillText(
+            CENTER_TEXT,
+            WIDTH / 2,
+            HEIGHT / 2
+        );
+
+        ctx.restore();
+    }
+
+
+    // ------------------------------------------
+    // CENTER TEXT
+    // ------------------------------------------
+
+    ctx.save();
+
+    ctx.font =
+        `bold ${fontSize}px Georgia`;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.globalAlpha =
+        centerAlpha / 255;
+
+    ctx.fillStyle =
+        "rgb(255,250,245)";
+
+    ctx.fillText(
+        CENTER_TEXT,
+        WIDTH / 2,
+        HEIGHT / 2
+    );
+
+    ctx.restore();
+}
+
+
+// ======================================================
+// CREATE PARTICLES
+// ======================================================
+
+const outline =
+    buildOutlineParticles(160);
+
+const fill =
+    buildFillParticles(130);
+
+
+// ======================================================
+// DELAY
+// เหมือน Python
+// ======================================================
+
+const outlineSpan =
+    outline.length > 0
+        ? Math.max(
+            ...outline.map(p => p.order)
+        )
+        : 0;
+
+const framesPerStep = 1.6;
+
+const fillStartFrame =
+    Math.floor(
+        outlineSpan * framesPerStep
+    ) + 30;
+
+
+// outline delay
+for (const p of outline) {
+
+    p.delay =
+        Math.floor(
+            p.order * framesPerStep
+        );
+}
+
+
+// fill delay
+for (const p of fill) {
+
+    p.delay =
+        fillStartFrame +
+        p.order;
+}
+
+
+const particles =
+    outline.concat(fill);
+
+
+// ======================================================
+// START
+// ======================================================
+
+let frame = 0;
+
+let running = true;
+
+
+// ======================================================
+// MAIN LOOP
+// ======================================================
+
+function animate() {
+
+    if (!running)
+        return;
+
+
+    frame++;
+
+
+    // ------------------------------------------
+    // BLACK BACKGROUND
+    // ------------------------------------------
+
+    ctx.clearRect(
+        0,
+        0,
+        WIDTH,
+        HEIGHT
+    );
+
+    ctx.fillStyle = "black";
+
+    ctx.fillRect(
+        0,
+        0,
+        WIDTH,
+        HEIGHT
+    );
+
+
+    // ------------------------------------------
+    // PARTICLES
+    // ------------------------------------------
+
+    for (const p of particles) {
+
+        if (
+            frame > p.delay &&
+            p.alpha < 255
+        ) {
+
+            p.alpha =
+                Math.min(
+                    255,
+                    p.alpha +
+                    14 +
+                    randomInt(0, 4)
+                );
+        }
+
+
+        let flick = 1.0;
+
+
+        if (p.alpha >= 255) {
+
+            flick =
+                0.75 +
+                0.25 *
+                Math.sin(
+                    frame * 0.04 +
+                    p.flicker
+                );
+        }
+
+
+        const alpha =
+            Math.floor(
+                p.alpha * flick
+            );
+
+
+        if (alpha <= 0)
+            continue;
+
+
+        drawGlowText(
+            p,
+            alpha
+        );
+    }
+
+
+    // ------------------------------------------
+    // CENTER
+    // ------------------------------------------
+
+    const centerStartFrame =
+        fillStartFrame + 200;
+
+    drawCenterText(
+        frame,
+        centerStartFrame
+    );
+
+
+    // ------------------------------------------
+    // LOOP
+    // ------------------------------------------
+
+    requestAnimationFrame(animate);
+}
+
+
+// ======================================================
+// MOBILE AUDIO
+// ======================================================
+
+startScreen.addEventListener(
+    "click",
+    function () {
+
+        music.play()
+            .catch(error => {
+                console.log(
+                    "Audio blocked:",
+                    error
+                );
+            });
+
+        startScreen.style.display =
+            "none";
+
+        animate();
+    },
+    {
+        once: true
+    }
+);
+
+
+// ======================================================
+// DESKTOP
+// ======================================================
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (event.key === "Escape") {
+
+            running = false;
+
+            music.pause();
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>
